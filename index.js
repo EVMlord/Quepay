@@ -25,7 +25,7 @@ const verifyApiKey = (req, res, next) => {
 };
 
 // Signup route
-app.post('/signup', async (req, res) => {
+app.post('/signup', verifyApiKey, async (req, res) => {
     try {
         // Check if user already exists
         let user = await User.findOne({ email: req.body.email });
@@ -55,7 +55,7 @@ app.post('/signup', async (req, res) => {
 });
 
 // Login route
-app.post('/login', async (req, res) => {
+app.post('/login', verifyApiKey, async (req, res) => {
     try {
         // Check if user exists
         const user = await User.findOne({ email: req.body.email });
@@ -81,7 +81,7 @@ app.post('/login', async (req, res) => {
 });
 
 
-app.post('/verify-email', async (req, res) => {
+app.post('/verify-email', verifyApiKey, async (req, res) => {
     try {
         const { email, code } = req.body;
         const user = await User.findOne({ email: email });
@@ -102,7 +102,7 @@ app.post('/verify-email', async (req, res) => {
     }
 });
 
-app.post('/resend-verification', async (req, res) => {
+app.post('/resend-verification', verifyApiKey, async (req, res) => {
     try {
         const { email } = req.body;
         const user = await User.findOne({ email: email });
