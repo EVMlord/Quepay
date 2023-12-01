@@ -43,13 +43,17 @@ app.post('/signup', verifyApiKey, async (req, res) => {
         user.emailVerificationExpires = new Date(Date.now() + 3600000); // 1 hour from now
         await user.save();
 
-        try {
-
-            // sendVerificationEmail(user, verificationCode); // send the numeric code in the email
-        } catch (error) {
-            console.log(error)
-        }
-
+        sendEmail({
+            user: email,
+            heading: 'Quepay Verification Code',
+            text: `Your verification code is ${verificationCode}`
+        }).then(result => {
+            // console.log('Email sent successfully!');
+            console.log(result)
+            // console.log(message)
+        }).catch(error => {
+            console.error('Failed to send email:', error);
+        });
 
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
@@ -105,6 +109,37 @@ app.post('/verify-email', verifyApiKey, async (req, res) => {
     }
 });
 
+// app.post('/test', verifyApiKey, async (req, res) => {
+//     try {
+//         const { email } = req.body;
+//         //const user = await User.findOne({ email: email });
+
+//         try {
+//             // Create a message for the email body
+//             // const message = `You are receiving this email because you (or someone else)\n`;
+
+
+//             sendEmail({
+//                 user: email,
+//                 heading: 'Quepay Verification Code',
+//                 text: 'Hello World'
+//             }).then(result => {
+//                 // console.log('Email sent successfully!');
+//                 console.log(result)
+//                 // console.log(message)
+//             }).catch(error => {
+//                 console.error('Failed to send email:', error);
+//             });
+//         } catch (error) {
+//             console.log(error)
+//         }
+
+//         res.json({ message: 'Email sent successfully' });
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// });
+
 app.post('/resend-verification', verifyApiKey, async (req, res) => {
     try {
         const { email } = req.body;
@@ -125,7 +160,7 @@ app.post('/resend-verification', verifyApiKey, async (req, res) => {
             // Calculate time remaining until the user can request a new code
             const timeToWait = (user.emailVerificationExpires - now) / 1000; // Convert to seconds
             return res.status(429).json({
-                message: `Please wait ${Math.ceil(timeToWait)} seconds before requesting a new verification code.`
+                message: `Please wait ${Math.ceil(timeToWait / 60)} minutes before requesting a new verification code.`
             });
         }
 
@@ -146,9 +181,9 @@ app.post('/resend-verification', verifyApiKey, async (req, res) => {
             sendEmail({
                 user: user.email,
                 heading: 'Quepay Verification Code',
-                text: `<h3>${message}</h3>`
+                text: `${message}`
             }).then(result => {
-                console.log('Email sent successfully!');
+                console.log(result);
             }).catch(error => {
                 console.error('Failed to send email:', error);
             });

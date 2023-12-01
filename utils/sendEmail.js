@@ -11,15 +11,20 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
     },
+    // dkim: {
+    //     domainName: 'quepay.xyz',
+    //     keySelector: 'default',
+    //     privateKey: process.env.DKIM_KEY,
+    // },
 });
 
 const sendEmail = async ({ user, heading, text }) => {
     try {
         const result = await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+            from: `"Quepay Inc." <${process.env.EMAIL_USER}>`,
             to: user,
             subject: heading,
-            html: text
+            text: text
         });
 
         console.log('Message sent: %s', result.messageId);
