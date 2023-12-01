@@ -1,8 +1,13 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
-const sendEmail = require('./utils/sendEmail');
+import express from 'express';
+import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
+import sendEmail from './utils/sendEmail.js';
+import User from './models/user.js';
+
+const PROJECT_NAME = 'Quepay';
+const OTHER_COOL_INFO = '';
 
 const app = express();
 
@@ -12,8 +17,6 @@ app.use(express.json()); // for parsing application/json
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.error(err));
-
-const User = require('./models/user');
 
 // API key verification middleware
 const verifyApiKey = (req, res, next) => {
@@ -140,13 +143,15 @@ app.post('/resend-verification', verifyApiKey, async (req, res) => {
   ${verificationCode}\n\n
   If you did not request this, please ignore this email and your account will remain unverified.\n`;
 
-
-            await sendEmail({
-                to: user.email,
-                subject: 'Quepay Verification Code',
-                text: message,
+            sendEmail({
+                user: user.email,
+                heading: 'Quepay Verification Code',
+                text: `<h3>${message}</h3>`
+            }).then(result => {
+                console.log('Email sent successfully!');
+            }).catch(error => {
+                console.error('Failed to send email:', error);
             });
-            //sendVerificationEmail(user, verificationCode); // send the numeric code in the email
         } catch (error) {
             console.log(error)
         }
@@ -154,6 +159,24 @@ app.post('/resend-verification', verifyApiKey, async (req, res) => {
         res.json({ message: 'A new verification code has been sent to your email address.' });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+});
+
+app.get('/', async (req, res) => {
+    try {
+        // Construct the statistics object
+        const stats = {
+            projectName: PROJECT_NAME,
+            otherCoolInfo: OTHER_COOL_INFO,
+            website: 'https://quepay.xyz'
+            // You can add more statistics here
+        };
+
+        // Respond with the statistics
+        res.json({ success: true, statistics: stats });
+    } catch (error) {
+        // If there's an error, respond with the error message
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
